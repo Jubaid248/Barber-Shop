@@ -12,7 +12,7 @@ class Photo extends Model
     protected $fillable = [
         'barber_id',
         'image_path',
-        'caption',
+        'is_profile',
     ];
 
     public function barber()

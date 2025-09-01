@@ -1,68 +1,85 @@
 <?php
-
 namespace App\Http\Controllers;
 
 use App\Models\Barber;
 use App\Models\Photo;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class PhotoController extends Controller
 {
     public function create(Barber $barber)
     {
-        // Only allow the barber owner to add photos
-        if (auth()->id() !== $barber->user_id) {
-            abort(403);
+        // Check if this barber belongs to the current user
+        if ($barber->user_id !== auth()->id()) {
+            return redirect()->route('dashboard')->with('error', 'Unauthorized access.');
         }
-
         return view('photo.create', compact('barber'));
     }
 
     public function store(Request $request, Barber $barber)
     {
-        // Only allow the barber owner to add photos
-        if (auth()->id() !== $barber->user_id) {
-            abort(403);
+        // Check if this barber belongs to the current user
+        if ($barber->user_id !== auth()->id()) {
+            return redirect()->route('dashboard')->with('error', 'Unauthorized access.');
         }
 
         $request->validate([
-            'image' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'caption' => 'nullable|string|max:255',
+            'photos.*' => 'image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
-        $imagePath = $request->file('image')->store('barber_photos', 'public');
+        if ($request->hasFile('photos')) {
+            foreach ($request->file('photos') as $photo) {
+                $path = $photo->store('photos', 'public');
 
-        Photo::create([
-            'barber_id' => $barber->id,
-            'image_path' => $imagePath,
-            'caption' => $request->caption,
-        ]);
+                Photo::create([
+                    'barber_id' => $barber->id,
+                    'image_path' => $path,
+                ]);
+            }
+        }
 
-        return redirect()->route('barber.profile', $barber)->with('success', 'Photo added successfully!');
+        return redirect()->route('barber.profile', $barber->id)->with('success', 'Photos uploaded successfully!');
     }
 
     public function updateProfileImage(Request $request, Barber $barber)
     {
-        // Only allow the barber owner to update profile image
-        if (auth()->id() !== $barber->user_id) {
-            abort(403);
+        // Check if this barber belongs to the current user
+        if ($barber->user_id !== auth()->id()) {
+            return redirect()->route('dashboard')->with('error', 'Unauthorized access.');
         }
 
         $request->validate([
-            'profile_image' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'profile_image' => 'image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
-        // Delete old profile image if exists
-        if ($barber->profile_image) {
-            \Storage::disk('public')->delete($barber->profile_image);
+        if ($request->hasFile('profile_image')) {
+            // Delete old profile image if exists
+            if ($barber->profile_image) {
+                Storage::disk('public')->delete($barber->profile_image);
+            }
+
+            $path = $request->file('profile_image')->store('profile_images', 'public');
+            $barber->profile_image = $path;
+            $barber->save();
         }
 
-        $imagePath = $request->file('profile_image')->store('barber_profiles', 'public');
+        return redirect()->route('barber.profile', $barber->id)->with('success', 'Profile image updated successfully!');
+    }
 
-        $barber->update([
-            'profile_image' => $imagePath,
-        ]);
+    public function destroy(Photo $photo)
+    {
+        // Check if this photo belongs to the current user's barber
+        if ($photo->barber->user_id !== auth()->id()) {
+            return redirect()->route('dashboard')->with('error', 'Unauthorized access.');
+        }
 
-        return redirect()->route('barber.profile', $barber)->with('success', 'Profile image updated successfully!');
+        // Delete the file from storage
+        Storage::disk('public')->delete($photo->image_path);
+
+        // Delete the database record
+        $photo->delete();
+
+        return redirect()->route('barber.profile', $photo->barber_id)->with('success', 'Photo deleted successfully!');
     }
 }

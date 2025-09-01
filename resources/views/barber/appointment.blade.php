@@ -49,7 +49,7 @@
                     @endif
                 </div>
             </div>
-            
+
             @if($appointment->status == 'pending')
             <div class="card">
                 <div class="card-header">
@@ -74,7 +74,7 @@
             </div>
             @endif
         </div>
-        
+
         <div class="col-md-4">
             <div class="card">
                 <div class="card-header">
@@ -84,7 +84,7 @@
                     <h5>{{ $appointment->user->name }}</h5>
                     <p><strong>Email:</strong> {{ $appointment->user->email }}</p>
                     <p><strong>Phone:</strong> {{ $appointment->user->phone ?? 'Not provided' }}</p>
-                    
+
                     <div class="mt-3">
                         <a href="{{ route('appointment.show', $appointment->id) }}" class="btn btn-outline-primary">View Full Details</a>
                     </div>

@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ config('app.name', 'Barber Finder') }}</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@300;400;500;600;700&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
@@ -370,28 +371,32 @@
 
         /* Quick Actions Card Fix */
         .quick-action-card {
-            background-color: var(--bg-card) !important;
-            border: 1px solid var(--border-color) !important;
-            border-radius: 2px !important;
             padding: 1.5rem !important;
             text-align: center !important;
             transition: all 0.3s ease !important;
             cursor: pointer !important;
+            border-radius: 12px !important;
+            color: white !important;
+            text-decoration: none !important;
+            display: flex !important;
+            flex-direction: column !important;
+            align-items: center !important;
+            justify-content: center !important;
+            min-height: 120px !important;
         }
 
         .quick-action-card:hover {
-            border-color: var(--accent) !important;
-            transform: translateY(-5px) !important;
+            transform: scale(1.05) !important;
         }
 
         .quick-action-card i {
-            color: var(--accent) !important;
+            color: white !important;
             font-size: 2rem !important;
             margin-bottom: 0.75rem !important;
         }
 
         .quick-action-card p {
-            color: var(--text-primary) !important;
+            color: white !important;
             font-weight: 600 !important;
             text-transform: uppercase !important;
             font-size: 0.875rem !important;
@@ -449,8 +454,8 @@
                 <div class="hidden md:flex items-center space-x-8">
                     <a href="{{ url('/') }}" class="nav-link">Home</a>
                     <a href="{{ route('search.index') }}" class="nav-link">Find Barbers</a>
-                    <a href="#" class="nav-link">Services</a>
-                    <a href="#" class="nav-link">About</a>
+                    <a href="{{ route('services') }}" class="nav-link">Services</a>
+                    <a href="{{ route('about') }}" class="nav-link">About</a>
 
                     @guest
                         <a href="{{ route('login') }}" class="nav-link">Login</a>
@@ -496,8 +501,8 @@
             <div class="container mx-auto px-4 py-4 space-y-2">
                 <a href="{{ url('/') }}" class="block py-2 text-white">Home</a>
                 <a href="{{ route('search.index') }}" class="block py-2 text-white">Find Barbers</a>
-                <a href="#" class="block py-2 text-white">Services</a>
-                <a href="#" class="block py-2 text-white">About</a>
+                <a href="{{ route('services') }}" class="block py-2 text-white">Services</a>
+                <a href="{{ route('about') }}" class="block py-2 text-white">About</a>
 
                 @guest
                     <a href="{{ route('login') }}" class="block py-2 text-white">Login</a>
@@ -597,5 +602,8 @@
             }
         });
     </script>
+
+        <!-- AI Chatbot -->
+    @include('components.chatbot')
 </body>
 </html>

@@ -40,6 +40,11 @@ class Barber extends Model
         return $this->hasMany(Photo::class);
     }
 
+    public function profileImage()
+    {
+        return $this->hasOne(Photo::class)->where('is_profile', true);
+    }
+
     public function reviews()
     {
         return $this->hasMany(Review::class);
@@ -50,7 +55,7 @@ class Barber extends Model
         return $this->hasMany(Favorite::class);
     }
 
-    // Accessors for average rating and reviews count
+    // Accessors
     public function getAverageRatingAttribute()
     {
         return $this->reviews()->avg('rating') ?: 0;
@@ -65,5 +70,13 @@ class Barber extends Model
     {
         // This is a placeholder - in a real app, you might have a services table
         return 15; // Minimum price for services
+    }
+
+    public function getProfileImageUrlAttribute()
+    {
+        if ($this->profileImage) {
+            return asset('storage/' . $this->profileImage->image_path);
+        }
+        return asset('images/default-barber.jpg');
     }
 }

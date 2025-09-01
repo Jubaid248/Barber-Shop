@@ -10,9 +10,9 @@ class AvailabilityController extends Controller
 {
     public function create(Barber $barber)
     {
-        // Only allow the barber owner to create availability
-        if (auth()->id() !== $barber->user_id) {
-            abort(403);
+        // Check if this barber belongs to the current user
+        if (auth()->user()->id !== $barber->user_id) {
+            return redirect()->route('dashboard')->with('error', 'Unauthorized access.');
         }
 
         return view('availability.create', compact('barber'));
@@ -20,15 +20,15 @@ class AvailabilityController extends Controller
 
     public function store(Request $request, Barber $barber)
     {
-        // Only allow the barber owner to create availability
-        if (auth()->id() !== $barber->user_id) {
-            abort(403);
+        // Check if this barber belongs to the current user
+        if (auth()->user()->id !== $barber->user_id) {
+            return redirect()->route('dashboard')->with('error', 'Unauthorized access.');
         }
 
         $request->validate([
-            'day_of_week' => 'required|string',
-            'start_time' => 'required|date_format:H:i',
-            'end_time' => 'required|date_format:H:i|after:start_time',
+            'day_of_week' => 'required|integer|min:0|max:6',
+            'start_time' => 'required',
+            'end_time' => 'required|after:start_time',
         ]);
 
         Availability::create([
@@ -38,11 +38,16 @@ class AvailabilityController extends Controller
             'end_time' => $request->end_time,
         ]);
 
-        return redirect()->route('barber.profile', $barber)->with('success', 'Availability added successfully!');
+        return redirect()->route('barber.profile', $barber->id)->with('success', 'Availability added successfully!');
     }
 
     public function index(Barber $barber)
     {
+        // Check if this barber belongs to the current user
+        if (auth()->user()->id !== $barber->user_id) {
+            return redirect()->route('dashboard')->with('error', 'Unauthorized access.');
+        }
+
         $availabilities = $barber->availabilities()->orderBy('day_of_week')->orderBy('start_time')->get();
 
         return view('availability.index', compact('barber', 'availabilities'));

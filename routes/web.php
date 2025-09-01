@@ -18,12 +18,31 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+Route::get('/about', function () {
+    return view('about');
+})->name('about');
+
+Route::get('/services', function () {
+    return view('services');
+})->name('services');
+
 Route::get('/dashboard', function () {
     return view('dashboard');
 })->middleware(['auth'])->name('dashboard');
 
 // Authentication routes
 require __DIR__.'/auth.php';
+
+// Profile routes
+Route::middleware('auth')->group(function () {
+    Route::get('/profile', [App\Http\Controllers\ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile', [App\Http\Controllers\ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/profile', [App\Http\Controllers\ProfileController::class, 'destroy'])->name('profile.destroy');
+});
+
+// Chatbot routes
+Route::post('/chatbot/chat', [App\Http\Controllers\ChatbotController::class, 'chat'])->name('chatbot.chat');
+Route::get('/chatbot/quick-actions', [App\Http\Controllers\ChatbotController::class, 'getQuickActions'])->name('chatbot.quick-actions');
 
 // Search routes
 Route::get('/search', [SearchController::class, 'index'])->name('search.index');
@@ -66,13 +85,14 @@ Route::middleware(['auth'])->group(function () {
 
     // Availability routes
     Route::get('/availability/create/{barber}', [AvailabilityController::class, 'create'])->name('availability.create');
-    Route::post('/availability/{barber}', [AvailabilityController::class, 'store'])->name('availability.store');
     Route::get('/availability/{barber}', [AvailabilityController::class, 'index'])->name('availability.index');
+    Route::post('/availability/{barber}', [AvailabilityController::class, 'store'])->name('availability.store');
 
     // Photo routes
     Route::get('/photo/create/{barber}', [PhotoController::class, 'create'])->name('photo.create');
     Route::post('/photo/{barber}', [PhotoController::class, 'store'])->name('photo.store');
     Route::post('/photo/update/profile/{barber}', [PhotoController::class, 'updateProfileImage'])->name('photo.update.profile');
+    Route::delete('/photo/{photo}', [PhotoController::class, 'destroy'])->name('photo.destroy');
 
     // Favorite routes
     Route::get('/favorites', [FavoriteController::class, 'index'])->name('favorite.index');
